@@ -2,6 +2,7 @@ package cache_test
 
 import (
 	"context"
+	cache2 "github.com/buildpacks/pack/pkg/cache"
 	"math/rand"
 	"testing"
 	"time"
@@ -15,7 +16,6 @@ import (
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 
-	"github.com/buildpacks/pack/internal/cache"
 	h "github.com/buildpacks/pack/testhelpers"
 )
 
@@ -43,7 +43,7 @@ func testImageCache(t *testing.T, when spec.G, it spec.S) {
 				refName := "gcr.io/my/repo:tag"
 				ref, err := name.ParseReference(refName, name.WeakValidation)
 				h.AssertNil(t, err)
-				subject := cache.NewImageCache(ref, dockerClient)
+				subject := cache2.NewImageCache(ref, dockerClient)
 				actual := subject.Name()
 				if actual != refName {
 					t.Fatalf("Incorrect cache name expected %s, got %s", refName, actual)
@@ -54,11 +54,11 @@ func testImageCache(t *testing.T, when spec.G, it spec.S) {
 		it("resolves implied tag", func() {
 			ref, err := name.ParseReference("my/repo:latest", name.WeakValidation)
 			h.AssertNil(t, err)
-			subject := cache.NewImageCache(ref, dockerClient)
+			subject := cache2.NewImageCache(ref, dockerClient)
 
 			ref, err = name.ParseReference("my/repo", name.WeakValidation)
 			h.AssertNil(t, err)
-			expected := cache.NewImageCache(ref, dockerClient)
+			expected := cache2.NewImageCache(ref, dockerClient)
 
 			h.AssertEq(t, subject.Name(), expected.Name())
 		})
@@ -66,10 +66,10 @@ func testImageCache(t *testing.T, when spec.G, it spec.S) {
 		it("resolves implied registry", func() {
 			ref, err := name.ParseReference("index.docker.io/my/repo", name.WeakValidation)
 			h.AssertNil(t, err)
-			subject := cache.NewImageCache(ref, dockerClient)
+			subject := cache2.NewImageCache(ref, dockerClient)
 			ref, err = name.ParseReference("my/repo", name.WeakValidation)
 			h.AssertNil(t, err)
-			expected := cache.NewImageCache(ref, dockerClient)
+			expected := cache2.NewImageCache(ref, dockerClient)
 			if subject.Name() != expected.Name() {
 				t.Fatalf("The same repo name should result in the same image")
 			}
@@ -90,8 +90,8 @@ func testImageCache(t *testing.T, when spec.G, it spec.S) {
 		it("returns the cache type", func() {
 			ref, err := name.ParseReference("my/repo", name.WeakValidation)
 			h.AssertNil(t, err)
-			subject := cache.NewImageCache(ref, dockerClient)
-			expected := cache.Image
+			subject := cache2.NewImageCache(ref, dockerClient)
+			expected := cache2.Image
 			h.AssertEq(t, subject.Type(), expected)
 		})
 	})
@@ -100,7 +100,7 @@ func testImageCache(t *testing.T, when spec.G, it spec.S) {
 		var (
 			imageName    string
 			dockerClient client.CommonAPIClient
-			subject      *cache.ImageCache
+			subject      *cache2.ImageCache
 			ctx          context.Context
 		)
 
@@ -112,7 +112,7 @@ func testImageCache(t *testing.T, when spec.G, it spec.S) {
 
 			ref, err := name.ParseReference(h.RandString(10), name.WeakValidation)
 			h.AssertNil(t, err)
-			subject = cache.NewImageCache(ref, dockerClient)
+			subject = cache2.NewImageCache(ref, dockerClient)
 			h.AssertNil(t, err)
 			imageName = subject.Name()
 		})

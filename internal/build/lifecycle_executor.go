@@ -2,6 +2,7 @@ package build
 
 import (
 	"context"
+	cache2 "github.com/buildpacks/pack/pkg/cache"
 	"io"
 	"math/rand"
 	"os"
@@ -13,7 +14,6 @@ import (
 	"github.com/google/go-containerregistry/pkg/name"
 
 	"github.com/buildpacks/pack/internal/builder"
-	"github.com/buildpacks/pack/internal/cache"
 	"github.com/buildpacks/pack/internal/container"
 	"github.com/buildpacks/pack/pkg/dist"
 	"github.com/buildpacks/pack/pkg/logging"
@@ -54,7 +54,7 @@ type LifecycleExecutor struct {
 type Cache interface {
 	Name() string
 	Clear(context.Context) error
-	Type() cache.Type
+	Type() cache2.Type
 }
 
 type Termui interface {
@@ -86,7 +86,7 @@ type LifecycleOptions struct {
 	Layout               bool
 	Termui               Termui
 	DockerHost           string
-	Cache                cache.CacheOpts
+	Cache                cache2.CacheOpts
 	CacheImage           string
 	HTTPProxy            string
 	HTTPSProxy           string

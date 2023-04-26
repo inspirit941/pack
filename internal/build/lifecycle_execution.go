@@ -3,6 +3,7 @@ package build
 import (
 	"context"
 	"fmt"
+	cache2 "github.com/buildpacks/pack/pkg/cache"
 	"math/rand"
 	"os"
 	"path/filepath"
@@ -17,7 +18,6 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/buildpacks/pack/internal/builder"
-	"github.com/buildpacks/pack/internal/cache"
 	"github.com/buildpacks/pack/internal/paths"
 	"github.com/buildpacks/pack/internal/style"
 	"github.com/buildpacks/pack/pkg/logging"
@@ -165,7 +165,7 @@ func (l *LifecycleExecution) PrevImageName() string {
 func (l *LifecycleExecution) Run(ctx context.Context, phaseFactoryCreator PhaseFactoryCreator) error {
 	phaseFactory := phaseFactoryCreator(l)
 	var buildCache Cache
-	if l.opts.CacheImage != "" || (l.opts.Cache.Build.Format == cache.CacheImage) {
+	if l.opts.CacheImage != "" || (l.opts.Cache.Build.Format == cache2.CacheImage) {
 		cacheImageName := l.opts.CacheImage
 		if cacheImageName == "" {
 			cacheImageName = l.opts.Cache.Build.Source
@@ -174,14 +174,14 @@ func (l *LifecycleExecution) Run(ctx context.Context, phaseFactoryCreator PhaseF
 		if err != nil {
 			return fmt.Errorf("invalid cache image name: %s", err)
 		}
-		buildCache = cache.NewImageCache(cacheImage, l.docker)
+		buildCache = cache2.NewImageCache(cacheImage, l.docker)
 	} else {
 		switch l.opts.Cache.Build.Format {
-		case cache.CacheVolume:
-			buildCache = cache.NewVolumeCache(l.opts.Image, l.opts.Cache.Build, "build", l.docker)
+		case cache2.CacheVolume:
+			buildCache = cache2.NewVolumeCache(l.opts.Image, l.opts.Cache.Build, "build", l.docker)
 			l.logger.Debugf("Using build cache volume %s", style.Symbol(buildCache.Name()))
-		case cache.CacheBind:
-			buildCache = cache.NewBindCache(l.opts.Cache.Build, l.docker)
+		case cache2.CacheBind:
+			buildCache = cache2.NewBindCache(l.opts.Cache.Build, l.docker)
 			l.logger.Debugf("Using build cache dir %s", style.Symbol(buildCache.Name()))
 		}
 	}
@@ -193,7 +193,7 @@ func (l *LifecycleExecution) Run(ctx context.Context, phaseFactoryCreator PhaseF
 		l.logger.Debugf("Build cache %s cleared", style.Symbol(buildCache.Name()))
 	}
 
-	launchCache := cache.NewVolumeCache(l.opts.Image, l.opts.Cache.Launch, "launch", l.docker)
+	launchCache := cache2.NewVolumeCache(l.opts.Image, l.opts.Cache.Launch, "launch", l.docker)
 
 	if !l.opts.UseCreator {
 		if l.platformAPI.LessThan("0.7") {
@@ -320,10 +320,10 @@ func (l *LifecycleExecution) Create(ctx context.Context, buildCache, launchCache
 
 	var cacheBindOp PhaseConfigProviderOperation
 	switch buildCache.Type() {
-	case cache.Image:
+	case cache2.Image:
 		flags = append(flags, "-cache-image", buildCache.Name())
 		cacheBindOp = WithBinds(l.opts.Volumes...)
-	case cache.Volume, cache.Bind:
+	case cache2.Volume, cache2.Bind:
 		cacheBindOp = WithBinds(append(l.opts.Volumes, fmt.Sprintf("%s:%s", buildCache.Name(), l.mountPaths.cacheDir()))...)
 	}
 
@@ -424,10 +424,10 @@ func (l *LifecycleExecution) Restore(ctx context.Context, buildCache Cache, phas
 	// for cache
 	cacheBindOp := NullOp()
 	switch buildCache.Type() {
-	case cache.Image:
+	case cache2.Image:
 		flags = append(flags, "-cache-image", buildCache.Name())
 		registryImages = append(registryImages, buildCache.Name())
-	case cache.Volume:
+	case cache2.Volume:
 		flags = append(flags, "-cache-dir", l.mountPaths.cacheDir())
 		cacheBindOp = WithBinds(fmt.Sprintf("%s:%s", buildCache.Name(), l.mountPaths.cacheDir()))
 	}
@@ -447,7 +447,7 @@ func (l *LifecycleExecution) Restore(ctx context.Context, buildCache Cache, phas
 		}
 
 		switch buildCache.Type() {
-		case cache.Volume:
+		case cache2.Volume:
 			kanikoCacheBindOp = WithBinds(fmt.Sprintf("%s:%s", buildCache.Name(), l.mountPaths.kanikoCacheDir()))
 		default:
 			return fmt.Errorf("build cache must be volume cache when building with extensions")
@@ -502,9 +502,9 @@ func (l *LifecycleExecution) Analyze(ctx context.Context, buildCache, launchCach
 		}
 	} else {
 		switch buildCache.Type() {
-		case cache.Image:
+		case cache2.Image:
 			flags = append(flags, "-cache-image", buildCache.Name())
-		case cache.Volume:
+		case cache2.Volume:
 			if platformAPILessThan07 {
 				args = append([]string{"-cache-dir", l.mountPaths.cacheDir()}, args...)
 				cacheBindOp = WithBinds(fmt.Sprintf("%s:%s", buildCache.Name(), l.mountPaths.cacheDir()))
@@ -643,7 +643,7 @@ func (l *LifecycleExecution) ExtendBuild(ctx context.Context, buildCache Cache, 
 	// set kaniko cache opt
 	var kanikoCacheBindOp PhaseConfigProviderOperation
 	switch buildCache.Type() {
-	case cache.Volume:
+	case cache2.Volume:
 		kanikoCacheBindOp = WithBinds(fmt.Sprintf("%s:%s", buildCache.Name(), l.mountPaths.kanikoCacheDir()))
 	default:
 		return fmt.Errorf("build cache must be volume cache when building with extensions")
@@ -673,7 +673,7 @@ func (l *LifecycleExecution) ExtendRun(ctx context.Context, buildCache Cache, ph
 	// set kaniko cache opt
 	var kanikoCacheBindOp PhaseConfigProviderOperation
 	switch buildCache.Type() {
-	case cache.Volume:
+	case cache2.Volume:
 		kanikoCacheBindOp = WithBinds(fmt.Sprintf("%s:%s", buildCache.Name(), l.mountPaths.kanikoCacheDir()))
 	default:
 		return fmt.Errorf("build cache must be volume cache when building with extensions")
@@ -738,9 +738,9 @@ func (l *LifecycleExecution) Export(ctx context.Context, buildCache, launchCache
 
 	cacheBindOp := NullOp()
 	switch buildCache.Type() {
-	case cache.Image:
+	case cache2.Image:
 		flags = append(flags, "-cache-image", buildCache.Name())
-	case cache.Volume:
+	case cache2.Volume:
 		cacheBindOp = WithBinds(fmt.Sprintf("%s:%s", buildCache.Name(), l.mountPaths.cacheDir()))
 	}
 

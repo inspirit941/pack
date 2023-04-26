@@ -10,6 +10,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	cache2 "github.com/buildpacks/pack/pkg/cache"
 	"math/rand"
 	"os"
 	"path/filepath"
@@ -32,7 +33,6 @@ import (
 	"github.com/buildpacks/pack/acceptance/config"
 	"github.com/buildpacks/pack/acceptance/invoke"
 	"github.com/buildpacks/pack/acceptance/managers"
-	"github.com/buildpacks/pack/internal/cache"
 	"github.com/buildpacks/pack/internal/style"
 	"github.com/buildpacks/pack/pkg/archive"
 	h "github.com/buildpacks/pack/testhelpers"
@@ -832,9 +832,9 @@ func testAcceptance(
 							imageManager.CleanupImages(repoName)
 							ref, err := name.ParseReference(repoName, name.WeakValidation)
 							assert.Nil(err)
-							cacheImage := cache.NewImageCache(ref, dockerCli)
-							buildCacheVolume := cache.NewVolumeCache(ref, cache.CacheInfo{}, "build", dockerCli)
-							launchCacheVolume := cache.NewVolumeCache(ref, cache.CacheInfo{}, "launch", dockerCli)
+							cacheImage := cache2.NewImageCache(ref, dockerCli)
+							buildCacheVolume := cache2.NewVolumeCache(ref, cache2.CacheInfo{}, "build", dockerCli)
+							launchCacheVolume := cache2.NewVolumeCache(ref, cache2.CacheInfo{}, "launch", dockerCli)
 							cacheImage.Clear(context.TODO())
 							buildCacheVolume.Clear(context.TODO())
 							launchCacheVolume.Clear(context.TODO())
@@ -926,9 +926,9 @@ func testAcceptance(
 					imageManager.CleanupImages(repoName)
 					ref, err := name.ParseReference(repoName, name.WeakValidation)
 					assert.Nil(err)
-					cacheImage := cache.NewImageCache(ref, dockerCli)
-					buildCacheVolume := cache.NewVolumeCache(ref, cache.CacheInfo{}, "build", dockerCli)
-					launchCacheVolume := cache.NewVolumeCache(ref, cache.CacheInfo{}, "launch", dockerCli)
+					cacheImage := cache2.NewImageCache(ref, dockerCli)
+					buildCacheVolume := cache2.NewVolumeCache(ref, cache2.CacheInfo{}, "build", dockerCli)
+					launchCacheVolume := cache2.NewVolumeCache(ref, cache2.CacheInfo{}, "launch", dockerCli)
 					cacheImage.Clear(context.TODO())
 					buildCacheVolume.Clear(context.TODO())
 					launchCacheVolume.Clear(context.TODO())
@@ -2597,8 +2597,8 @@ include = [ "*.jar", "media/mountain.jpg", "/media/person.png", ]
 					imageManager.CleanupImages(origID, repoName, runBefore)
 					ref, err := name.ParseReference(repoName, name.WeakValidation)
 					assert.Nil(err)
-					buildCacheVolume := cache.NewVolumeCache(ref, cache.CacheInfo{}, "build", dockerCli)
-					launchCacheVolume := cache.NewVolumeCache(ref, cache.CacheInfo{}, "launch", dockerCli)
+					buildCacheVolume := cache2.NewVolumeCache(ref, cache2.CacheInfo{}, "build", dockerCli)
+					launchCacheVolume := cache2.NewVolumeCache(ref, cache2.CacheInfo{}, "launch", dockerCli)
 					assert.Succeeds(buildCacheVolume.Clear(context.TODO()))
 					assert.Succeeds(launchCacheVolume.Clear(context.TODO()))
 				})

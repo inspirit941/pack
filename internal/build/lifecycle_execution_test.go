@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	cache2 "github.com/buildpacks/pack/pkg/cache"
 	"io"
 	"math/rand"
 	"os"
@@ -27,7 +28,6 @@ import (
 
 	"github.com/buildpacks/pack/internal/build"
 	"github.com/buildpacks/pack/internal/build/fakes"
-	"github.com/buildpacks/pack/internal/cache"
 	"github.com/buildpacks/pack/pkg/dist"
 	"github.com/buildpacks/pack/pkg/logging"
 	h "github.com/buildpacks/pack/testhelpers"
@@ -150,7 +150,7 @@ func testLifecycleExecution(t *testing.T, when spec.G, it spec.S) {
 		}
 
 		fakeLaunchCache = fakes.NewFakeCache()
-		fakeLaunchCache.ReturnForType = cache.Volume
+		fakeLaunchCache.ReturnForType = cache2.Volume
 		fakeLaunchCache.ReturnForName = "some-launch-cache"
 
 		fakePhase = &fakes.FakePhase{}
@@ -513,7 +513,7 @@ func testLifecycleExecution(t *testing.T, when spec.G, it spec.S) {
 				providedUseCreator = false
 				providedClearCache = true
 				lifecycleOps = append(lifecycleOps, func(options *build.LifecycleOptions) { // allow buildCache.Clear to succeed without requiring the docker daemon to be running
-					options.Cache.Build.Format = cache.CacheBind
+					options.Cache.Build.Format = cache2.CacheBind
 				})
 
 				when("platform < 0.10", func() {
@@ -722,9 +722,9 @@ func testLifecycleExecution(t *testing.T, when spec.G, it spec.S) {
 						Builder:      fakeBuilder,
 						TrustBuilder: false,
 						UseCreator:   false,
-						Cache: cache.CacheOpts{
-							Build: cache.CacheInfo{
-								Format: cache.CacheImage,
+						Cache: cache2.CacheOpts{
+							Build: cache2.CacheInfo{
+								Format: cache2.CacheImage,
 								Source: "%%%",
 							},
 						},
@@ -2286,14 +2286,14 @@ func testLifecycleExecution(t *testing.T, when spec.G, it spec.S) {
 
 func newFakeVolumeCache() *fakes.FakeCache {
 	c := fakes.NewFakeCache()
-	c.ReturnForType = cache.Volume
+	c.ReturnForType = cache2.Volume
 	c.ReturnForName = "some-cache"
 	return c
 }
 
 func newFakeImageCache() *fakes.FakeCache {
 	c := fakes.NewFakeCache()
-	c.ReturnForType = cache.Image
+	c.ReturnForType = cache2.Image
 	c.ReturnForName = "some-cache-image"
 	return c
 }

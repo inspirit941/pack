@@ -2,6 +2,7 @@ package cache_test
 
 import (
 	"context"
+	cache2 "github.com/buildpacks/pack/pkg/cache"
 	"math/rand"
 	"strings"
 	"testing"
@@ -16,7 +17,6 @@ import (
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 
-	"github.com/buildpacks/pack/internal/cache"
 	h "github.com/buildpacks/pack/testhelpers"
 )
 
@@ -42,7 +42,7 @@ func testCache(t *testing.T, when spec.G, it spec.S) {
 			it("adds suffix to calculated name", func() {
 				ref, err := name.ParseReference("my/repo", name.WeakValidation)
 				h.AssertNil(t, err)
-				subject := cache.NewVolumeCache(ref, cache.CacheInfo{}, "some-suffix", dockerClient)
+				subject := cache2.NewVolumeCache(ref, cache2.CacheInfo{}, "some-suffix", dockerClient)
 				if !strings.HasSuffix(subject.Name(), ".some-suffix") {
 					t.Fatalf("Calculated volume name '%s' should end with '.some-suffix'", subject.Name())
 				}
@@ -52,8 +52,8 @@ func testCache(t *testing.T, when spec.G, it spec.S) {
 				ref, err := name.ParseReference("my/repo", name.WeakValidation)
 				h.AssertNil(t, err)
 
-				subject := cache.NewVolumeCache(ref, cache.CacheInfo{}, "some-suffix", dockerClient)
-				expected := cache.NewVolumeCache(ref, cache.CacheInfo{}, "some-suffix", dockerClient)
+				subject := cache2.NewVolumeCache(ref, cache2.CacheInfo{}, "some-suffix", dockerClient)
+				expected := cache2.NewVolumeCache(ref, cache2.CacheInfo{}, "some-suffix", dockerClient)
 				if subject.Name() != expected.Name() {
 					t.Fatalf("The same repo name should result in the same volume")
 				}
@@ -63,11 +63,11 @@ func testCache(t *testing.T, when spec.G, it spec.S) {
 				ref, err := name.ParseReference("my/repo:other-tag", name.WeakValidation)
 				h.AssertNil(t, err)
 
-				subject := cache.NewVolumeCache(ref, cache.CacheInfo{}, "some-suffix", dockerClient)
+				subject := cache2.NewVolumeCache(ref, cache2.CacheInfo{}, "some-suffix", dockerClient)
 
 				ref, err = name.ParseReference("my/repo", name.WeakValidation)
 				h.AssertNil(t, err)
-				notExpected := cache.NewVolumeCache(ref, cache.CacheInfo{}, "some-suffix", dockerClient)
+				notExpected := cache2.NewVolumeCache(ref, cache2.CacheInfo{}, "some-suffix", dockerClient)
 				if subject.Name() == notExpected.Name() {
 					t.Fatalf("Different image tags should result in different volumes")
 				}
@@ -77,11 +77,11 @@ func testCache(t *testing.T, when spec.G, it spec.S) {
 				ref, err := name.ParseReference("registry.com/my/repo:other-tag", name.WeakValidation)
 				h.AssertNil(t, err)
 
-				subject := cache.NewVolumeCache(ref, cache.CacheInfo{}, "some-suffix", dockerClient)
+				subject := cache2.NewVolumeCache(ref, cache2.CacheInfo{}, "some-suffix", dockerClient)
 
 				ref, err = name.ParseReference("my/repo", name.WeakValidation)
 				h.AssertNil(t, err)
-				notExpected := cache.NewVolumeCache(ref, cache.CacheInfo{}, "some-suffix", dockerClient)
+				notExpected := cache2.NewVolumeCache(ref, cache2.CacheInfo{}, "some-suffix", dockerClient)
 				if subject.Name() == notExpected.Name() {
 					t.Fatalf("Different image registries should result in different volumes")
 				}
@@ -91,11 +91,11 @@ func testCache(t *testing.T, when spec.G, it spec.S) {
 				ref, err := name.ParseReference("my/repo:latest", name.WeakValidation)
 				h.AssertNil(t, err)
 
-				subject := cache.NewVolumeCache(ref, cache.CacheInfo{}, "some-suffix", dockerClient)
+				subject := cache2.NewVolumeCache(ref, cache2.CacheInfo{}, "some-suffix", dockerClient)
 
 				ref, err = name.ParseReference("my/repo", name.WeakValidation)
 				h.AssertNil(t, err)
-				expected := cache.NewVolumeCache(ref, cache.CacheInfo{}, "some-suffix", dockerClient)
+				expected := cache2.NewVolumeCache(ref, cache2.CacheInfo{}, "some-suffix", dockerClient)
 				h.AssertEq(t, subject.Name(), expected.Name())
 			})
 
@@ -103,11 +103,11 @@ func testCache(t *testing.T, when spec.G, it spec.S) {
 				ref, err := name.ParseReference("index.docker.io/my/repo", name.WeakValidation)
 				h.AssertNil(t, err)
 
-				subject := cache.NewVolumeCache(ref, cache.CacheInfo{}, "some-suffix", dockerClient)
+				subject := cache2.NewVolumeCache(ref, cache2.CacheInfo{}, "some-suffix", dockerClient)
 
 				ref, err = name.ParseReference("my/repo", name.WeakValidation)
 				h.AssertNil(t, err)
-				expected := cache.NewVolumeCache(ref, cache.CacheInfo{}, "some-suffix", dockerClient)
+				expected := cache2.NewVolumeCache(ref, cache2.CacheInfo{}, "some-suffix", dockerClient)
 				h.AssertEq(t, subject.Name(), expected.Name())
 			})
 
@@ -115,7 +115,7 @@ func testCache(t *testing.T, when spec.G, it spec.S) {
 				ref, err := name.ParseReference("myregistryhost:5000/fedora/httpd:version1.0", name.WeakValidation)
 				h.AssertNil(t, err)
 
-				subject := cache.NewVolumeCache(ref, cache.CacheInfo{}, "some-suffix", dockerClient)
+				subject := cache2.NewVolumeCache(ref, cache2.CacheInfo{}, "some-suffix", dockerClient)
 
 				h.AssertContains(t, subject.Name(), "fedora_httpd_version1.0")
 				h.AssertTrue(t, names.RestrictedNamePattern.MatchString(subject.Name()))
@@ -124,8 +124,8 @@ func testCache(t *testing.T, when spec.G, it spec.S) {
 
 		when("volume cache name is not empty", func() {
 			volumeName := "test-volume-name"
-			cacheInfo := cache.CacheInfo{
-				Format: cache.CacheVolume,
+			cacheInfo := cache2.CacheInfo{
+				Format: cache2.CacheVolume,
 				Source: volumeName,
 			}
 
@@ -133,7 +133,7 @@ func testCache(t *testing.T, when spec.G, it spec.S) {
 				ref, err := name.ParseReference("my/repo", name.WeakValidation)
 				h.AssertNil(t, err)
 
-				subject := cache.NewVolumeCache(ref, cacheInfo, "some-suffix", dockerClient)
+				subject := cache2.NewVolumeCache(ref, cacheInfo, "some-suffix", dockerClient)
 
 				if volumeName != subject.Name() {
 					t.Fatalf("Volume name '%s' should be same as the name specified '%s'", subject.Name(), volumeName)
@@ -144,9 +144,9 @@ func testCache(t *testing.T, when spec.G, it spec.S) {
 				ref, err := name.ParseReference("my/repo", name.WeakValidation)
 				h.AssertNil(t, err)
 
-				subject := cache.NewVolumeCache(ref, cacheInfo, "some-suffix", dockerClient)
+				subject := cache2.NewVolumeCache(ref, cacheInfo, "some-suffix", dockerClient)
 
-				expected := cache.NewVolumeCache(ref, cacheInfo, "some-suffix", dockerClient)
+				expected := cache2.NewVolumeCache(ref, cacheInfo, "some-suffix", dockerClient)
 				if subject.Name() != expected.Name() {
 					t.Fatalf("The same repo name should result in the same volume")
 				}
@@ -156,11 +156,11 @@ func testCache(t *testing.T, when spec.G, it spec.S) {
 				ref, err := name.ParseReference("registry.com/my/repo:other-tag", name.WeakValidation)
 				h.AssertNil(t, err)
 
-				subject := cache.NewVolumeCache(ref, cache.CacheInfo{}, "some-suffix", dockerClient)
+				subject := cache2.NewVolumeCache(ref, cache2.CacheInfo{}, "some-suffix", dockerClient)
 
 				ref, err = name.ParseReference("my/repo", name.WeakValidation)
 				h.AssertNil(t, err)
-				notExpected := cache.NewVolumeCache(ref, cache.CacheInfo{}, "some-suffix", dockerClient)
+				notExpected := cache2.NewVolumeCache(ref, cache2.CacheInfo{}, "some-suffix", dockerClient)
 				if subject.Name() == notExpected.Name() {
 					t.Fatalf("Different image registries should result in different volumes")
 				}
@@ -170,11 +170,11 @@ func testCache(t *testing.T, when spec.G, it spec.S) {
 				ref, err := name.ParseReference("my/repo:latest", name.WeakValidation)
 				h.AssertNil(t, err)
 
-				subject := cache.NewVolumeCache(ref, cache.CacheInfo{}, "some-suffix", dockerClient)
+				subject := cache2.NewVolumeCache(ref, cache2.CacheInfo{}, "some-suffix", dockerClient)
 
 				ref, err = name.ParseReference("my/repo", name.WeakValidation)
 				h.AssertNil(t, err)
-				expected := cache.NewVolumeCache(ref, cache.CacheInfo{}, "some-suffix", dockerClient)
+				expected := cache2.NewVolumeCache(ref, cache2.CacheInfo{}, "some-suffix", dockerClient)
 				h.AssertEq(t, subject.Name(), expected.Name())
 			})
 
@@ -182,11 +182,11 @@ func testCache(t *testing.T, when spec.G, it spec.S) {
 				ref, err := name.ParseReference("index.docker.io/my/repo", name.WeakValidation)
 				h.AssertNil(t, err)
 
-				subject := cache.NewVolumeCache(ref, cache.CacheInfo{}, "some-suffix", dockerClient)
+				subject := cache2.NewVolumeCache(ref, cache2.CacheInfo{}, "some-suffix", dockerClient)
 
 				ref, err = name.ParseReference("my/repo", name.WeakValidation)
 				h.AssertNil(t, err)
-				expected := cache.NewVolumeCache(ref, cache.CacheInfo{}, "some-suffix", dockerClient)
+				expected := cache2.NewVolumeCache(ref, cache2.CacheInfo{}, "some-suffix", dockerClient)
 				h.AssertEq(t, subject.Name(), expected.Name())
 			})
 
@@ -194,7 +194,7 @@ func testCache(t *testing.T, when spec.G, it spec.S) {
 				ref, err := name.ParseReference("myregistryhost:5000/fedora/httpd:version1.0", name.WeakValidation)
 				h.AssertNil(t, err)
 
-				subject := cache.NewVolumeCache(ref, cache.CacheInfo{}, "some-suffix", dockerClient)
+				subject := cache2.NewVolumeCache(ref, cache2.CacheInfo{}, "some-suffix", dockerClient)
 
 				h.AssertContains(t, subject.Name(), "fedora_httpd_version1.0")
 				h.AssertTrue(t, names.RestrictedNamePattern.MatchString(subject.Name()))
@@ -206,7 +206,7 @@ func testCache(t *testing.T, when spec.G, it spec.S) {
 		var (
 			volumeName   string
 			dockerClient client.CommonAPIClient
-			subject      *cache.VolumeCache
+			subject      *cache2.VolumeCache
 			ctx          context.Context
 		)
 
@@ -219,7 +219,7 @@ func testCache(t *testing.T, when spec.G, it spec.S) {
 			ref, err := name.ParseReference(h.RandString(10), name.WeakValidation)
 			h.AssertNil(t, err)
 
-			subject = cache.NewVolumeCache(ref, cache.CacheInfo{}, "some-suffix", dockerClient)
+			subject = cache2.NewVolumeCache(ref, cache2.CacheInfo{}, "some-suffix", dockerClient)
 			volumeName = subject.Name()
 		})
 
@@ -255,8 +255,8 @@ func testCache(t *testing.T, when spec.G, it spec.S) {
 		it("returns the cache type", func() {
 			ref, err := name.ParseReference("my/repo", name.WeakValidation)
 			h.AssertNil(t, err)
-			subject := cache.NewVolumeCache(ref, cache.CacheInfo{}, "some-suffix", dockerClient)
-			expected := cache.Volume
+			subject := cache2.NewVolumeCache(ref, cache2.CacheInfo{}, "some-suffix", dockerClient)
+			expected := cache2.Volume
 			h.AssertEq(t, subject.Type(), expected)
 		})
 	})
