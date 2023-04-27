@@ -2,7 +2,7 @@ package build
 
 import (
 	"context"
-	cache2 "github.com/buildpacks/pack/pkg/cache"
+	"github.com/buildpacks/pack/pkg/cache"
 	"io"
 	"math/rand"
 	"os"
@@ -54,7 +54,7 @@ type LifecycleExecutor struct {
 type Cache interface {
 	Name() string
 	Clear(context.Context) error
-	Type() cache2.Type
+	Type() cache.Type
 }
 
 type Termui interface {
@@ -86,7 +86,7 @@ type LifecycleOptions struct {
 	Layout               bool
 	Termui               Termui
 	DockerHost           string
-	Cache                cache2.CacheOpts
+	Cache                cache.CacheOpts
 	CacheImage           string
 	HTTPProxy            string
 	HTTPSProxy           string

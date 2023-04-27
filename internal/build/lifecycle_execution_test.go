@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	cache2 "github.com/buildpacks/pack/pkg/cache"
+	"github.com/buildpacks/pack/pkg/cache"
 	"io"
 	"math/rand"
 	"os"
@@ -150,7 +150,7 @@ func testLifecycleExecution(t *testing.T, when spec.G, it spec.S) {
 		}
 
 		fakeLaunchCache = fakes.NewFakeCache()
-		fakeLaunchCache.ReturnForType = cache2.Volume
+		fakeLaunchCache.ReturnForType = cache.Volume
 		fakeLaunchCache.ReturnForName = "some-launch-cache"
 
 		fakePhase = &fakes.FakePhase{}
@@ -513,7 +513,7 @@ func testLifecycleExecution(t *testing.T, when spec.G, it spec.S) {
 				providedUseCreator = false
 				providedClearCache = true
 				lifecycleOps = append(lifecycleOps, func(options *build.LifecycleOptions) { // allow buildCache.Clear to succeed without requiring the docker daemon to be running
-					options.Cache.Build.Format = cache2.CacheBind
+					options.Cache.Build.Format = cache.CacheBind
 				})
 
 				when("platform < 0.10", func() {
@@ -722,9 +722,9 @@ func testLifecycleExecution(t *testing.T, when spec.G, it spec.S) {
 						Builder:      fakeBuilder,
 						TrustBuilder: false,
 						UseCreator:   false,
-						Cache: cache2.CacheOpts{
-							Build: cache2.CacheInfo{
-								Format: cache2.CacheImage,
+						Cache: cache.CacheOpts{
+							Build: cache.CacheInfo{
+								Format: cache.CacheImage,
 								Source: "%%%",
 							},
 						},
@@ -2286,14 +2286,14 @@ func testLifecycleExecution(t *testing.T, when spec.G, it spec.S) {
 
 func newFakeVolumeCache() *fakes.FakeCache {
 	c := fakes.NewFakeCache()
-	c.ReturnForType = cache2.Volume
+	c.ReturnForType = cache.Volume
 	c.ReturnForName = "some-cache"
 	return c
 }
 
 func newFakeImageCache() *fakes.FakeCache {
 	c := fakes.NewFakeCache()
-	c.ReturnForType = cache2.Image
+	c.ReturnForType = cache.Image
 	c.ReturnForName = "some-cache-image"
 	return c
 }
